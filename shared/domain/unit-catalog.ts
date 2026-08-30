@@ -188,6 +188,22 @@ export function unidadesVisiveisNoMapa(
   }
 }
 
+export function comporUnidadesDoMapa(
+  visiveis: readonly Unidade[],
+  selecionadas: readonly Unidade[],
+  limite = 45,
+): Unidade[] {
+  const porCodigo = new Map<string, Unidade>()
+
+  for (const unidade of [...selecionadas, ...visiveis]) {
+    if (!porCodigo.has(unidade.codigo) && porCodigo.size < limite) {
+      porCodigo.set(unidade.codigo, unidade)
+    }
+  }
+
+  return [...porCodigo.values()]
+}
+
 export function rotuloMotivo(motivo: MotivoSugestao): string {
   return {
     perto: 'Perto de você',

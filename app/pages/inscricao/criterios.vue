@@ -20,7 +20,7 @@ const childTabs = computed(() => draft.value.criancas.map((child, index) => ({
 
 const familyItems = criteriosFamilia.map(criterion => ({
   label: criterion.pergunta,
-  value: criterion.id,
+  value: String(criterion.id),
   description: criterion.desempate
     ? 'Critério de desempate'
     : `${criterion.pontos} ponto${criterion.pontos === 1 ? '' : 's'}`,
@@ -28,33 +28,33 @@ const familyItems = criteriosFamilia.map(criterion => ({
 
 const childItems = criteriosCrianca.map(criterion => ({
   label: criterion.pergunta,
-  value: criterion.id,
+  value: String(criterion.id),
   description: criterion.desempate
     ? 'Critério de desempate'
     : `${criterion.pontos} ponto${criterion.pontos === 1 ? '' : 's'}`,
 }))
 
-const selectedFamilyIds = computed<number[]>({
+const selectedFamilyIds = computed<string[]>({
   get: () => criteriosFamilia
     .filter(criterion => draft.value.criteriosFamilia[criterion.id])
-    .map(criterion => criterion.id),
+    .map(criterion => String(criterion.id)),
   set: (ids) => {
     const selected = new Set(ids)
     criteriosFamilia.forEach((criterion) => {
-      draft.value.criteriosFamilia[criterion.id] = selected.has(criterion.id)
+      draft.value.criteriosFamilia[criterion.id] = selected.has(String(criterion.id))
     })
     touch()
   },
 })
 
-const selectedChildIds = computed<number[]>({
+const selectedChildIds = computed<string[]>({
   get: () => criteriosCrianca
     .filter(criterion => (draft.value.criteriosCrianca[criterion.id] ?? []).includes(activeChildId.value))
-    .map(criterion => criterion.id),
+    .map(criterion => String(criterion.id)),
   set: (ids) => {
     const selected = new Set(ids)
     criteriosCrianca.forEach((criterion) => {
-      toggleChildCriterion(criterion.id, activeChildId.value, selected.has(criterion.id))
+      toggleChildCriterion(criterion.id, activeChildId.value, selected.has(String(criterion.id)))
     })
   },
 })

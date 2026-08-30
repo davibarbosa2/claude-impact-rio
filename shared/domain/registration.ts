@@ -1,7 +1,7 @@
 import { meta } from './data'
 import { cepValido, cpfValido, digitos, emailValido, telefoneValido } from './format'
-import { grupamentoDe } from './grouping'
-import type { Canal, Crianca, Inscricao } from '../types/registration'
+import { dataIsoValida, grupamentoDe } from './grouping'
+import type { Canal, Crianca, Horario, Inscricao } from '../types/registration'
 
 export const MAX_CRIANCAS = 5
 
@@ -25,6 +25,13 @@ export function criarCrianca(id = 'crianca-1'): Crianca {
     opcoes: [],
     observacoes: '',
   }
+}
+
+export function alterarHorarioDaCrianca(crianca: Crianca, horario: Horario): boolean {
+  if (crianca.horario === horario) return false
+  crianca.horario = horario
+  crianca.opcoes = []
+  return true
 }
 
 export function criarInscricao(): Inscricao {
@@ -73,6 +80,7 @@ export function validarResponsavel(inscricao: Inscricao): Erros {
   }
   if (!cpfValido(responsavel.cpf)) erros.cpf = 'CPF inválido — confira os números.'
   if (!responsavel.nascimento) erros.nascimento = 'Informe a data de nascimento.'
+  else if (!dataIsoValida(responsavel.nascimento)) erros.nascimento = 'Confira a data de nascimento.'
   else if (responsavel.nascimento > hoje()) erros.nascimento = 'A data não pode estar no futuro.'
   if (!emailValido(responsavel.email)) erros.email = 'Informe um e-mail válido, como nome@email.com.'
   if (!telefoneValido(responsavel.telefone)) erros.telefone = 'Informe DDD e número.'
@@ -100,6 +108,7 @@ export function validarCrianca(crianca: Crianca): Erros {
     erros.nome = 'Informe o nome completo da criança.'
   }
   if (!crianca.nascimento) erros.nascimento = 'Informe a data de nascimento.'
+  else if (!dataIsoValida(crianca.nascimento)) erros.nascimento = 'Confira a data de nascimento.'
   else if (crianca.nascimento > hoje()) erros.nascimento = 'A data não pode estar no futuro.'
   else {
     const faixa = grupamentoDe(crianca.nascimento)
@@ -138,11 +147,21 @@ export function validarCriancas(inscricao: Inscricao): Record<string, Erros> {
 }
 
 export function validarOpcoes(inscricao: Inscricao): Record<string, string> {
-  return Object.fromEntries(
-    inscricao.criancas
-      .filter(crianca => crianca.opcoes.length === 0)
-      .map(crianca => [crianca.id, 'Escolha pelo menos uma unidade.']),
-  )
+  const erros: Record<string, string> = {}
+
+  inscricao.criancas.forEach((crianca) => {
+    if (crianca.opcoes.length === 0) {
+      erros[crianca.id] = 'Escolha pelo menos uma unidade.'
+    }
+    else if (crianca.opcoes.length > maxOpcoes) {
+      erros[crianca.id] = `Escolha no máximo ${maxOpcoes} unidades.`
+    }
+    else if (new Set(crianca.opcoes).size !== crianca.opcoes.length) {
+      erros[crianca.id] = 'Escolha unidades diferentes em cada posição.'
+    }
+  })
+
+  return erros
 }
 
 export function validarCanais(inscricao: Inscricao): Erros {

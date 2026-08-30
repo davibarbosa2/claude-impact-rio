@@ -27,7 +27,7 @@ function responsibleDate(): DateValue | undefined {
   }
 }
 
-function updateResponsibleDate(value: DateValue | undefined) {
+function updateResponsibleDate(value: DateValue | null | undefined) {
   draft.value.responsavel.nascimento = value?.toString() ?? ''
   touch()
 }
@@ -105,8 +105,8 @@ async function submit(_event: FormSubmitEvent<Inscricao>) {
       color="neutral"
       variant="soft"
       icon="i-lucide-log-in"
-      title="Acesso já realizado nesta simulação"
-      description="A demo assume uma conta autenticada anteriormente. Esta etapa coleta dados da inscrição, não cria login."
+      title="Acesso confirmado"
+      description="Seus dados de acesso já foram validados. Agora, complete as informações da inscrição."
     />
 
     <UForm :state="draft" :validate="validate" class="mt-8 space-y-6" @submit="submit">
@@ -138,6 +138,7 @@ async function submit(_event: FormSubmitEvent<Inscricao>) {
               class="w-full"
               locale="pt-BR"
               icon="i-lucide-calendar-days"
+              :range="false"
               :model-value="responsibleDate()"
               :max-value="maxDate"
               @update:model-value="updateResponsibleDate($event)"

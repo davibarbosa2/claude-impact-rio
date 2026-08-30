@@ -25,7 +25,7 @@ const tieBreakCount = criterios.filter(item => item.desempate).length
       variant="soft"
       icon="i-lucide-history"
       :title="`Régua histórica do processo de ${meta.anoReferencia}`"
-      :description="`A demo projeta essa régua para ${meta.anoProcesso}. No produto real, as regras precisam vir da integração oficial de cada processo.`"
+      :description="`Usamos o processo de ${meta.anoReferencia} como referência para ${meta.anoProcesso}. Confira sempre as regras publicadas para o processo atual.`"
     />
 
     <div class="mt-6 grid gap-4 sm:grid-cols-2">
@@ -57,9 +57,9 @@ const tieBreakCount = criterios.filter(item => item.desempate).length
       class="mt-6"
       :items="[
         {
-          label: `Comprovação em até ${meta.prazoDocumentosDias} dias`,
+          label: `Comprovação em até ${meta.prazoDocumentosDias} dias corridos`,
           icon: 'i-lucide-file-clock',
-          content: 'Ao marcar um critério, a revisão mostra quais documentos serão necessários. O prazo começa depois do envio da inscrição.',
+          content: 'Ao marcar um critério, a revisão mostra quais documentos serão necessários. Na regra de referência, o prazo corrido começa depois do envio.',
         },
         {
           label: 'Sem documento, o ponto é retirado',

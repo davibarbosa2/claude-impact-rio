@@ -11,6 +11,7 @@ import type { Inscricao, RespostaInscricaoSimulada } from '#shared/types/registr
 
 const submissionSchema = z.object({
   version: z.literal(2),
+  status: z.enum(['rascunho', 'enviada']),
   termoAceitoEm: z.string().min(1),
   responsavel: z.object({
     nome: z.string().trim().min(3),
@@ -47,6 +48,9 @@ const submissionSchema = z.object({
   criteriosFamilia: z.record(z.string(), z.boolean()),
   criteriosCrianca: z.record(z.string(), z.array(z.string())),
   canais: z.array(z.enum(['email', 'whatsapp', 'sms', 'push'])).min(1),
+  protocolo: z.string().nullable(),
+  enviadoEm: z.string().nullable(),
+  atualizadoEm: z.string().nullable(),
 }).passthrough()
 
 export default defineEventHandler(async (event): Promise<RespostaInscricaoSimulada> => {
@@ -56,12 +60,12 @@ export default defineEventHandler(async (event): Promise<RespostaInscricaoSimula
   if (!parsed.success) {
     throw createError({
       statusCode: 422,
-      statusMessage: 'A simulação possui dados incompletos.',
+      statusMessage: 'A inscrição possui dados incompletos.',
       data: parsed.error.flatten(),
     })
   }
 
-  const inscricao = parsed.data as Inscricao
+  const inscricao: Inscricao = parsed.data
   const invalid = Object.keys(validarCriancas(inscricao)).length
     || Object.keys(validarResponsavel(inscricao)).length
     || Object.keys(validarEndereco(inscricao)).length
@@ -71,7 +75,7 @@ export default defineEventHandler(async (event): Promise<RespostaInscricaoSimula
   if (invalid) {
     throw createError({
       statusCode: 422,
-      statusMessage: 'A simulação possui dados inválidos.',
+      statusMessage: 'A inscrição possui dados inválidos.',
     })
   }
 
@@ -79,7 +83,7 @@ export default defineEventHandler(async (event): Promise<RespostaInscricaoSimula
     data: {
       protocolo: gerarProtocolo(),
       status: 'Lista de espera',
-      proximaAcao: 'Acompanhar atualizações nesta demonstração.',
+      proximaAcao: 'Acompanhar as próximas atualizações.',
       sintetico: true,
     },
   }

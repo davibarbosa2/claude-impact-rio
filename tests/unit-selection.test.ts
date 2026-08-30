@@ -43,4 +43,15 @@ describe('seleção de unidades', () => {
 
     expect(result).toEqual({ ok: true, value: ['01004', '01006', '01005'] })
   })
+
+  it('mantém listas de irmãos independentes', () => {
+    const firstChild = ['01004']
+    const secondChild = ['01005']
+
+    const result = addUnitOption(firstChild, '01006')
+
+    expect(result).toEqual({ ok: true, value: ['01004', '01006'] })
+    expect(firstChild).toEqual(['01004'])
+    expect(secondChild).toEqual(['01005'])
+  })
 })

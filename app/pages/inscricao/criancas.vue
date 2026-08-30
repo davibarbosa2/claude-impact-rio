@@ -37,7 +37,7 @@ function asDateValue(value: string): DateValue | undefined {
   }
 }
 
-function updateBirthDate(child: Crianca, value: DateValue | undefined) {
+function updateBirthDate(child: Crianca, value: DateValue | null | undefined) {
   child.nascimento = value?.toString() ?? ''
   touch()
 }
@@ -59,8 +59,8 @@ function updateCpf(child: Crianca, value: string) {
 
 function updateSchedule(child: Crianca, value: string | number) {
   const hadOptions = child.opcoes.length > 0
-  setChildSchedule(child.id, value as Horario)
-  if (hadOptions) {
+  const changed = setChildSchedule(child.id, value as Horario)
+  if (changed && hadOptions) {
     toast.add({
       title: 'Escolhas de unidade removidas',
       description: 'O turno mudou; escolha novamente entre as unidades compatíveis.',
@@ -101,15 +101,6 @@ async function submit(_event: FormSubmitEvent<Inscricao>) {
         Você pode cadastrar até cinco irmãos nesta sessão. Cada criança terá sua própria lista de unidades.
       </p>
     </header>
-
-    <UAlert
-      class="mt-6"
-      color="info"
-      variant="soft"
-      icon="i-lucide-shield-check"
-      title="Use dados fictícios nesta demonstração"
-      description="O protótipo não está conectado ao cadastro oficial nem a um sistema de autenticação."
-    />
 
     <UForm :state="draft" :validate="validate" class="mt-8 space-y-6" @submit="submit">
       <UCard v-for="(child, index) in draft.criancas" :key="child.id" variant="subtle">
@@ -154,6 +145,7 @@ async function submit(_event: FormSubmitEvent<Inscricao>) {
               class="w-full"
               locale="pt-BR"
               icon="i-lucide-calendar-days"
+              :range="false"
               :model-value="asDateValue(child.nascimento)"
               :max-value="maxDate"
               @update:model-value="updateBirthDate(child, $event)"

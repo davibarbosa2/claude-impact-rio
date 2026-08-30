@@ -5,7 +5,7 @@ import { CANAIS, podeRevisar } from '#shared/domain/registration'
 import { documentosNecessarios, pontuacaoDaCrianca } from '#shared/domain/scoring'
 import type { Canal, Unidade } from '#shared/types/registration'
 
-const { draft, touch, submitSimulation } = useRegistrationDraft()
+const { draft, touch, setWantsCriteria, submitSimulation } = useRegistrationDraft()
 const catalog = useUnitCatalog()
 const acknowledged = ref(false)
 const submitting = ref(false)
@@ -25,6 +25,10 @@ const selectedChannels = computed<Canal[]>({
 })
 const documents = computed(() => documentosNecessarios(draft.value))
 const ready = computed(() => podeRevisar(draft.value))
+
+function prepareCriteriaEdit() {
+  setWantsCriteria(true)
+}
 
 function unitsFor(codes: string[]): Unidade[] {
   return codes.map(code => catalog.find(code)).filter((unit): unit is Unidade => Boolean(unit))
@@ -167,9 +171,20 @@ async function submit() {
 
     <UCard v-if="documents.length" class="mt-5" variant="subtle">
       <template #header>
-        <div>
-          <p class="text-sm font-semibold text-primary">Comprovação</p>
-          <h2 class="mt-1 text-xl font-semibold text-highlighted">Documentos previstos</h2>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-primary">Comprovação</p>
+            <h2 class="mt-1 text-xl font-semibold text-highlighted">Documentos previstos</h2>
+          </div>
+          <UButton
+            to="/inscricao/criterios?returnTo=/inscricao/revisao"
+            label="Editar critérios"
+            icon="i-lucide-pencil"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            @click="prepareCriteriaEdit"
+          />
         </div>
       </template>
       <UAccordion
@@ -188,13 +203,18 @@ async function submit() {
       variant="soft"
       icon="i-lucide-info"
       title="Inscrição sem critérios socioeconômicos"
-      description="As crianças seguem com 0 ponto socioeconômico. Isso não impede o envio desta simulação."
+      description="As crianças seguem com 0 ponto socioeconômico. Isso não impede o envio da inscrição."
+      :actions="[{
+        label: 'Editar critérios',
+        to: '/inscricao/criterios?returnTo=/inscricao/revisao',
+        onClick: prepareCriteriaEdit,
+      }]"
     />
 
     <UCheckbox
       v-model="acknowledged"
       class="mt-6"
-      label="Revisei os dados e entendo que este envio é somente uma simulação."
+      label="Revisei os dados e confirmo o envio da inscrição."
     />
 
     <UAlert
@@ -202,14 +222,14 @@ async function submit() {
       class="mt-4"
       color="error"
       variant="soft"
-      title="Não foi possível concluir a simulação"
+      title="Não foi possível concluir a inscrição"
       description="Confira os dados e tente novamente."
     />
 
     <div class="journey-actions mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
       <UButton to="/inscricao/unidades" label="Voltar" icon="i-lucide-arrow-left" color="neutral" variant="ghost" />
       <UButton
-        label="Enviar simulação"
+        label="Enviar inscrição"
         trailing-icon="i-lucide-send"
         :loading="submitting"
         :disabled="!ready || !acknowledged"

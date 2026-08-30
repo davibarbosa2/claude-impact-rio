@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { meta } from '#shared/domain/data'
+
 const { draft, resumeRoute, aceitarTermo } = useRegistrationDraft()
 const acceptedItems = ref<string[]>([])
 
@@ -10,18 +12,13 @@ const requirements = [
   },
   {
     value: 'historico',
-    label: 'Entendo que os indicadores da demo são históricos',
+    label: 'Entendo que os indicadores são históricos',
     description: 'Eles ajudam a comparar, mas não representam vagas abertas agora.',
   },
   {
     value: 'documentos',
     label: 'Se eu marcar critérios, precisarei comprová-los',
-    description: 'A referência atual do protótipo considera prazo de 3 dias.',
-  },
-  {
-    value: 'demo',
-    label: 'Entendo que esta não é uma inscrição oficial',
-    description: 'Nenhum dado é enviado à Prefeitura nesta demonstração.',
+    description: `A regra de referência considera prazo de ${meta.prazoDocumentosDias} dias corridos.`,
   },
 ]
 
@@ -93,8 +90,8 @@ const benefits = [
           color="neutral"
           variant="soft"
           icon="i-lucide-log-in"
-          title="A demo começa depois do login"
-          description="Assumimos que a identidade do responsável já foi validada por uma conta da Prefeitura. Autenticação não faz parte deste protótipo."
+          title="Você já entra com sua identidade confirmada"
+          description="O acesso acontece pela sua conta da Prefeitura antes desta jornada. Aqui, você começa direto pela inscrição."
         />
 
         <div v-if="hasStarted" class="mt-8 max-w-sm">
@@ -114,7 +111,7 @@ const benefits = [
           <template #header>
             <div>
               <p class="text-sm font-semibold text-primary">Antes de começar</p>
-              <h2 class="mt-1 text-xl font-semibold text-highlighted">Confirme estes quatro pontos</h2>
+              <h2 class="mt-1 text-xl font-semibold text-highlighted">Confirme estes três pontos</h2>
             </div>
           </template>
 
@@ -153,27 +150,5 @@ const benefits = [
       </UContainer>
     </section>
 
-    <UContainer class="py-10 sm:py-14">
-      <div class="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
-        <section class="rounded-2xl border border-muted p-5 sm:p-6">
-          <UIcon name="i-lucide-circle-check-big" class="size-6 text-success" />
-          <h2 class="mt-4 text-xl font-semibold text-highlighted">
-            O que a demo cobre
-          </h2>
-          <p class="mt-2 leading-relaxed text-muted">
-            Até cinco irmãos, regras socioeconômicas, endereço assistido por CEP, unidades elegíveis, mapa, sugestões opcionais e revisão.
-          </p>
-        </section>
-        <section class="rounded-2xl border border-muted p-5 sm:p-6">
-          <UIcon name="i-lucide-shield-alert" class="size-6 text-warning" />
-          <h2 class="mt-4 text-xl font-semibold text-highlighted">
-            O que fica fora
-          </h2>
-          <p class="mt-2 leading-relaxed text-muted">
-            Login, comprovação real, reserva de vaga, disponibilidade atual e integração com sistemas oficiais continuam como pontos futuros de integração.
-          </p>
-        </section>
-      </div>
-    </UContainer>
   </div>
 </template>

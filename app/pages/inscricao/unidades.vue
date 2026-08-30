@@ -4,6 +4,7 @@ import { grupamentoDe } from '#shared/domain/grouping'
 import { maxOpcoes } from '#shared/domain/registration'
 import {
   buscarUnidades,
+  comporUnidadesDoMapa,
   origemDoBairro,
   sugestoesDeUnidades,
   unidadesElegiveis,
@@ -35,11 +36,7 @@ const selectedUnits = computed(() => activeChild.value?.opcoes
   .filter((unit): unit is Unidade => Boolean(unit)) ?? [])
 const origin = computed(() => origemDoBairro(draft.value.endereco.bairro))
 const mapWindow = computed(() => unidadesVisiveisNoMapa(eligibleUnits.value, origin.value))
-const mapUnits = computed(() => {
-  const byCode = new Map(mapWindow.value.unidades.map(unit => [unit.codigo, unit]))
-  selectedUnits.value.forEach(unit => byCode.set(unit.codigo, unit))
-  return [...byCode.values()]
-})
+const mapUnits = computed(() => comporUnidadesDoMapa(mapWindow.value.unidades, selectedUnits.value))
 const suggestionGroups = computed(() => activeChild.value && group.value
   ? sugestoesDeUnidades(
       catalog.units.value,
@@ -95,9 +92,9 @@ function handleSchedule(value: string | number) {
   const child = activeChild.value
   if (!child) return
   const hadOptions = child.opcoes.length > 0
-  setChildSchedule(child.id, value as Horario)
+  const changed = setChildSchedule(child.id, value as Horario)
   query.value = ''
-  if (hadOptions) {
+  if (changed && hadOptions) {
     toast.add({
       title: 'Lista reiniciada para o novo turno',
       description: 'Agora mostramos somente unidades compatíveis com essa escolha.',
@@ -128,7 +125,7 @@ function handleSchedule(value: string | number) {
       variant="soft"
       icon="i-lucide-database"
       title="Indicadores históricos, não vagas atuais"
-      description="Grupamentos, turnos e resultados vêm do processo de 2025. Uma integração oficial deverá atualizar elegibilidade e disponibilidade."
+      description="Grupamentos, turnos e resultados vêm do processo de 2025 e não representam disponibilidade atual."
     />
 
     <UTabs
@@ -137,11 +134,7 @@ function handleSchedule(value: string | number) {
       :items="childTabs"
       value-key="value"
       :content="false"
-    >
-      <template #trailing="{ item }">
-        <UBadge color="neutral" variant="soft" size="sm">{{ item.badge }}</UBadge>
-      </template>
-    </UTabs>
+    />
 
     <template v-if="activeChild">
       <UCard class="mt-5" variant="subtle">
@@ -254,7 +247,7 @@ function handleSchedule(value: string | number) {
           </div>
 
           <ClientOnly>
-            <UnitMap
+            <UnitsUnitMap
               class="mt-4"
               :units="mapUnits"
               :selected-unit-ids="activeChild.opcoes"
@@ -285,7 +278,7 @@ function handleSchedule(value: string | number) {
               <h3 class="text-lg font-semibold text-highlighted">{{ suggestionGroup.titulo }}</h3>
               <p class="mt-1 max-w-3xl text-sm leading-relaxed text-muted">{{ suggestionGroup.explicacao }}</p>
               <div class="mt-4 grid gap-4 md:grid-cols-3">
-                <UnitChoiceCard
+                <UnitsUnitChoiceCard
                   v-for="suggestion in suggestionGroup.sugestoes"
                   :key="`${suggestionGroup.motivo}-${suggestion.unidade.codigo}`"
                   :unit="suggestion.unidade"
@@ -329,7 +322,7 @@ function handleSchedule(value: string | number) {
             description="Tente novamente em instantes."
           />
           <div v-else-if="visibleUnits.length" class="mt-4 grid gap-4 md:grid-cols-2">
-            <UnitChoiceCard
+            <UnitsUnitChoiceCard
               v-for="unit in visibleUnits"
               :key="unit.codigo"
               :unit="unit"

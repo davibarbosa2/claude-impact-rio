@@ -22,8 +22,14 @@ export type ResultadoGrupamento =
   | { situacao: 'muito-velha' }
   | { situacao: 'indefinido' }
 
+export function dataIsoValida(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const date = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+}
+
 export function grupamentoDe(nascimento: string): ResultadoGrupamento {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(nascimento)) return { situacao: 'indefinido' }
+  if (!dataIsoValida(nascimento)) return { situacao: 'indefinido' }
   const anoMes = nascimento.slice(0, 7)
 
   for (const faixa of faixas) {
@@ -42,7 +48,7 @@ export function grupamentoDe(nascimento: string): ResultadoGrupamento {
 }
 
 export function idadeNoCorte(nascimento: string): { anos: number, meses: number } | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(nascimento)) return null
+  if (!dataIsoValida(nascimento)) return null
   const corte = new Date(`${meta.anoProcesso}-03-31T00:00:00`)
   const dataNascimento = new Date(`${nascimento}T00:00:00`)
   if (dataNascimento > corte) return null

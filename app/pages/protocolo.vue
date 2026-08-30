@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { meta } from '#shared/domain/data'
 import { CANAIS } from '#shared/domain/registration'
 import { documentosNecessarios, prazoDocumentos } from '#shared/domain/scoring'
 import type { Unidade } from '#shared/types/registration'
@@ -31,8 +32,8 @@ function unitsFor(codes: string[]): Unidade[] {
         color="warning"
         variant="soft"
         icon="i-lucide-file-pen-line"
-        title="A simulação ainda não foi enviada"
-        description="Conclua a revisão para gerar o protocolo demonstrativo."
+        title="A inscrição ainda não foi enviada"
+        description="Conclua a revisão para gerar o protocolo."
         :actions="[{ label: 'Continuar inscrição', to: '/inscricao/revisao' }]"
       />
 
@@ -41,7 +42,7 @@ function unitsFor(codes: string[]): Unidade[] {
           <span class="mx-auto grid size-14 place-items-center rounded-full bg-success/10 text-success">
             <UIcon name="i-lucide-circle-check-big" class="size-7" />
           </span>
-          <UBadge class="mt-5" color="success" variant="soft" size="lg">Simulação enviada</UBadge>
+          <UBadge class="mt-5" color="success" variant="soft" size="lg">Inscrição enviada</UBadge>
           <h1 class="mt-4 text-3xl font-bold tracking-tight text-highlighted sm:text-5xl">
             Guarde este protocolo.
           </h1>
@@ -50,7 +51,7 @@ function unitsFor(codes: string[]): Unidade[] {
 
         <UCard class="mt-8" variant="subtle">
           <div class="text-center">
-            <p class="text-sm text-muted">Protocolo demonstrativo</p>
+            <p class="text-sm text-muted">Protocolo</p>
             <p class="mt-2 font-mono text-xl font-bold tracking-wide text-highlighted sm:text-2xl">{{ draft.protocolo }}</p>
             <p class="mt-2 text-xs text-muted">Enviado por {{ channelLabels }}</p>
           </div>
@@ -63,7 +64,7 @@ function unitsFor(codes: string[]): Unidade[] {
           variant="soft"
           icon="i-lucide-file-clock"
           title="Há documentos para comprovar"
-          :description="`Na regra demonstrada, apresente-os até ${deadline}.`"
+          :description="`Na regra de referência, são ${meta.prazoDocumentosDias} dias corridos: apresente-os até ${deadline}.`"
         />
 
         <section class="mt-8" aria-labelledby="applications-title">
@@ -92,15 +93,6 @@ function unitsFor(codes: string[]): Unidade[] {
             icon: 'i-lucide-file-check-2',
             content: item.documentos.join(' · '),
           }))"
-        />
-
-        <UAlert
-          class="mt-6"
-          color="warning"
-          variant="soft"
-          icon="i-lucide-flask-conical"
-          title="Este protocolo é sintético"
-          description="Nenhuma candidatura foi criada nos sistemas da Prefeitura."
         />
 
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

@@ -1,4 +1,4 @@
-import { criarCrianca, criarInscricao } from '#shared/domain/registration'
+import { alterarHorarioDaCrianca, criarCrianca, criarInscricao } from '#shared/domain/registration'
 import {
   addUnitOption,
   moveUnitOption,
@@ -8,7 +8,7 @@ import {
 import type { Canal, Horario, Inscricao } from '#shared/types/registration'
 import type { RespostaInscricaoSimulada } from '#shared/types/registration'
 
-const STORAGE_KEY = 'vaga-carioca.inscricao.v2'
+const STORAGE_KEY = 'fralda-carioca.inscricao.v2'
 
 export function useRegistrationDraft() {
   const draft = useState<Inscricao>('inscricao-creche-v2', criarInscricao)
@@ -87,9 +87,7 @@ export function useRegistrationDraft() {
 
   function setChildSchedule(childId: string, horario: Horario) {
     const child = draft.value.criancas.find(item => item.id === childId)
-    if (!child || child.horario === horario) return false
-    child.horario = horario
-    child.opcoes = []
+    if (!child || !alterarHorarioDaCrianca(child, horario)) return false
     touch()
     return true
   }
@@ -154,7 +152,7 @@ export function useRegistrationDraft() {
     })
 
     draft.value.status = 'enviada'
-    draft.value.protocolo = response.data.protocol
+    draft.value.protocolo = response.data.protocolo
     draft.value.enviadoEm = new Date().toISOString()
     touch()
 

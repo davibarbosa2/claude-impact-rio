@@ -234,7 +234,7 @@ async function submit(_event: FormSubmitEvent<Inscricao>) {
         color="info"
         variant="soft"
         icon="i-lucide-navigation"
-        title="A distância é aproximada nesta demo"
+        title="A distância é aproximada"
         description="O catálogo anonimizado não traz a rua da família; usamos o centro do bairro para as sugestões e mostramos essa limitação."
       />
 

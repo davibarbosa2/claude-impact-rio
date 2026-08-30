@@ -14,11 +14,11 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Vaga Carioca — protótipo',
+      title: 'Fralda Carioca',
       meta: [
         {
           name: 'description',
-          content: 'Protótipo mobile da jornada de inscrição em creche no Rio de Janeiro.',
+          content: 'Jornada de inscrição e acompanhamento de creche no Rio de Janeiro.',
         },
         { name: 'theme-color', content: '#ffffff' },
       ],

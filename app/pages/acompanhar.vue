@@ -11,7 +11,7 @@ const timelineItems = computed(() => [
     value: 'ativo',
     date: draft.value.enviadoEm ? new Date(draft.value.enviadoEm).toLocaleDateString('pt-BR') : 'Hoje',
     title: 'Ativo',
-    description: 'Dados recebidos e candidatura ativa no cenário demonstrativo.',
+    description: 'Dados recebidos e candidatura ativa.',
     icon: 'i-lucide-file-check-2',
   },
   {
@@ -55,7 +55,7 @@ function unitsFor(codes: string[]): Unidade[] {
         color="warning"
         variant="soft"
         icon="i-lucide-file-pen-line"
-        title="A simulação ainda está em rascunho"
+        title="A inscrição ainda está em rascunho"
         description="Conclua os dados, escolha as unidades e revise antes de acompanhar."
         :actions="[{ label: 'Continuar inscrição', to: '/inscricao/criancas' }]"
       />
@@ -70,15 +70,6 @@ function unitsFor(codes: string[]): Unidade[] {
             Cada criança tem seu próprio estado e suas preferências, mas todas as atualizações ficam nesta central.
           </p>
         </header>
-
-        <UAlert
-          class="mt-6"
-          color="warning"
-          variant="soft"
-          icon="i-lucide-flask-conical"
-          title="Estados e eventos sintéticos"
-          description="Os rótulos vêm das bases históricas; nenhum evento desta tela existe no sistema oficial."
-        />
 
         <div class="mt-6 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
           <UCard variant="subtle">
@@ -144,7 +135,7 @@ function unitsFor(codes: string[]): Unidade[] {
           variant="soft"
           icon="i-lucide-refresh-cw"
           title="Visão futura: as opções restantes continuam ativas"
-          description="Se uma oferta não for confirmada, nossa proposta mantém a candidatura nas preferências restantes. A operação oficial atual precisa ser validada antes de uma integração real."
+          description="Se uma oferta não for confirmada, esta evolução mantém a candidatura nas preferências restantes."
         />
 
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
