@@ -1,13 +1,6 @@
 <script setup lang="ts">
-import {
-  GeoJSONSource,
-  LngLatBounds,
-  Map,
-  NavigationControl,
-  Popup,
-} from 'maplibre-gl'
-import type { StyleSpecification } from 'maplibre-gl'
-import 'maplibre-gl/dist/maplibre-gl.css'
+import * as L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { percentual } from '#shared/domain/format'
 import type { Unidade } from '#shared/types/registration'
 
@@ -26,311 +19,186 @@ const emit = defineEmits<{
 
 const mapContainer = useTemplateRef<HTMLDivElement>('mapContainer')
 
-const mapStyle: StyleSpecification = {
-  version: 8,
-  sources: {
-    openstreetmap: {
-      type: 'raster',
-      tiles: ['https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors · HOT style hosted by OpenStreetMap France',
-      maxzoom: 20,
-    },
-  },
-  layers: [
-    {
-      id: 'background',
-      type: 'background',
-      paint: { 'background-color': '#eef2f6' },
-    },
-    {
-      id: 'basemap',
-      type: 'raster',
-      source: 'openstreetmap',
-    },
-  ],
+let map: L.Map | null = null
+let contextLayer: L.LayerGroup | null = null
+let unitsLayer: L.LayerGroup | null = null
+
+function locatedUnits() {
+  return props.units.filter(
+    (unit): unit is Unidade & { lat: number, lon: number } => unit.lat !== null && unit.lon !== null,
+  )
 }
 
-let map: Map | undefined
-let popup: Popup | undefined
+function renderContext() {
+  if (!contextLayer) return
+  contextLayer.clearLayers()
+  if (!props.origin) return
 
-function unitsGeoJson() {
-  return {
-    type: 'FeatureCollection' as const,
-    features: props.units
-      .filter((unit): unit is Unidade & { lat: number, lon: number } => unit.lat !== null && unit.lon !== null)
-      .map((unit) => {
-        const order = props.selectedUnitIds.indexOf(unit.codigo) + 1
+  L.marker([props.origin.lat, props.origin.lon], {
+    icon: L.divIcon({
+      className: 'unit-map-origin',
+      html: '<span></span>',
+      iconSize: [18, 18],
+      iconAnchor: [9, 9],
+    }),
+    keyboard: false,
+    zIndexOffset: 1000,
+  })
+    .bindTooltip(`Centro aproximado de ${props.neighborhood}`, { direction: 'top' })
+    .addTo(contextLayer)
 
-        return {
-          type: 'Feature' as const,
-          geometry: {
-            type: 'Point' as const,
-            coordinates: [unit.lon, unit.lat] as [number, number],
-          },
-          properties: {
-            id: unit.codigo,
-            name: unit.nome,
-            address: `${unit.endereco} · ${unit.bairro}`,
-            attendance: percentual(unit.taxaAtendimento),
-            selected: order > 0,
-            order,
-          },
-        }
-      }),
+  const rings = [
+    { km: 10, opacity: 0.025, dashArray: '3 7' },
+    { km: 5, opacity: 0.045, dashArray: '6 6' },
+    { km: 2, opacity: 0.08, dashArray: undefined },
+  ]
+
+  rings.forEach((ring) => {
+    L.circle([props.origin!.lat, props.origin!.lon], {
+      radius: ring.km * 1000,
+      color: '#2563eb',
+      weight: 1,
+      dashArray: ring.dashArray,
+      fillColor: '#2563eb',
+      fillOpacity: ring.opacity,
+      interactive: false,
+    }).addTo(contextLayer!)
+  })
+}
+
+function popupFor(unit: Unidade, order: number) {
+  const content = document.createElement('div')
+  const title = document.createElement('strong')
+  const address = document.createElement('p')
+  const metric = document.createElement('p')
+
+  title.textContent = unit.nome
+  address.textContent = `${unit.endereco} · ${unit.bairro}`
+  address.className = 'unit-map-popup-line'
+  metric.textContent = `${percentual(unit.taxaAtendimento)} confirmadas em 2025`
+  metric.className = 'unit-map-popup-metric'
+  content.append(title, address, metric)
+
+  if (order > 0) {
+    const note = document.createElement('strong')
+    note.className = 'unit-map-popup-note'
+    note.textContent = `${order}ª opção`
+    content.append(note)
+    return content
   }
+
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = 'map-popup-action'
+  button.textContent = props.full ? 'Lista com 5 opções' : 'Adicionar à minha lista'
+  button.disabled = props.full
+  button.addEventListener('click', () => {
+    emit('add', unit.codigo)
+    map?.closePopup()
+  })
+  content.append(button)
+  return content
 }
 
-function circlePolygon(km: number) {
-  if (!props.origin) return []
-  const points: [number, number][] = []
-  const latitudeRadians = props.origin.lat * Math.PI / 180
+function renderUnits() {
+  if (!unitsLayer) return
+  unitsLayer.clearLayers()
 
-  for (let index = 0; index <= 72; index += 1) {
-    const angle = index / 72 * Math.PI * 2
-    const latitude = props.origin.lat + (km / 111.32) * Math.sin(angle)
-    const longitude = props.origin.lon + (km / (111.32 * Math.cos(latitudeRadians))) * Math.cos(angle)
-    points.push([longitude, latitude])
-  }
-  return points
-}
+  locatedUnits().forEach((unit) => {
+    const order = props.selectedUnitIds.indexOf(unit.codigo) + 1
+    const position: L.LatLngExpression = [unit.lat, unit.lon]
+    const marker: L.Marker | L.CircleMarker = order > 0
+      ? L.marker(position, {
+          icon: L.divIcon({
+            className: 'unit-map-selected',
+            html: `<span>${order}</span>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+          }),
+          keyboard: false,
+          zIndexOffset: 500,
+        })
+      : L.circleMarker(position, {
+          radius: 5,
+          color: '#ffffff',
+          weight: 2,
+          fillColor: '#64748b',
+          fillOpacity: 0.9,
+        })
 
-function ringsGeoJson() {
-  return {
-    type: 'FeatureCollection' as const,
-    features: props.origin
-      ? [10, 5, 2].map(km => ({
-          type: 'Feature' as const,
-          geometry: { type: 'Polygon' as const, coordinates: [circlePolygon(km)] },
-          properties: { km },
-        }))
-      : [],
-  }
-}
-
-function originGeoJson() {
-  return {
-    type: 'FeatureCollection' as const,
-    features: props.origin
-      ? [{
-          type: 'Feature' as const,
-          geometry: {
-            type: 'Point' as const,
-            coordinates: [props.origin.lon, props.origin.lat] as [number, number],
-          },
-          properties: { label: props.neighborhood },
-        }]
-      : [],
-  }
-}
-
-function updateMapData() {
-  const unitsSource = map?.getSource('units')
-  if (unitsSource instanceof GeoJSONSource) unitsSource.setData(unitsGeoJson())
-  const ringsSource = map?.getSource('rings')
-  if (ringsSource instanceof GeoJSONSource) ringsSource.setData(ringsGeoJson())
-  const originSource = map?.getSource('origin')
-  if (originSource instanceof GeoJSONSource) originSource.setData(originGeoJson())
+    marker
+      .bindPopup(popupFor(unit, order), { closeButton: true, minWidth: 220 })
+      .addTo(unitsLayer!)
+  })
 }
 
 function fitMap() {
   if (!map) return
 
   if (props.origin && props.radiusKm) {
-    const latitudeDelta = props.radiusKm / 111.32
-    const longitudeDelta = props.radiusKm / (111.32 * Math.cos(props.origin.lat * Math.PI / 180))
-    map.fitBounds([
-      [props.origin.lon - longitudeDelta, props.origin.lat - latitudeDelta],
-      [props.origin.lon + longitudeDelta, props.origin.lat + latitudeDelta],
-    ], { padding: 24, duration: 0 })
+    const bounds = L.latLng(props.origin.lat, props.origin.lon).toBounds(props.radiusKm * 2000)
+    map.fitBounds(bounds, { padding: [16, 16], animate: false })
     return
   }
 
-  const locatedUnits = props.units.filter(
-    (unit): unit is Unidade & { lat: number, lon: number } => unit.lat !== null && unit.lon !== null,
+  const units = locatedUnits()
+  if (!units.length) return
+  map.fitBounds(
+    L.latLngBounds(units.map(unit => [unit.lat, unit.lon] as L.LatLngTuple)),
+    { padding: [36, 36], maxZoom: 13, animate: false },
   )
+}
 
-  if (!locatedUnits.length) return
-
-  const bounds = new LngLatBounds()
-  locatedUnits.forEach(unit => bounds.extend([unit.lon, unit.lat]))
-
-  map.fitBounds(bounds, {
-    padding: 44,
-    maxZoom: 13,
-    duration: 0,
-  })
+function renderMapData() {
+  renderContext()
+  renderUnits()
+  fitMap()
 }
 
 onMounted(() => {
   if (!mapContainer.value) return
 
-  const selectedColor = '#2563eb'
-  const defaultColor = '#64748b'
+  const center: L.LatLngExpression = props.origin
+    ? [props.origin.lat, props.origin.lon]
+    : [-22.9, -43.3]
 
-  map = new Map({
-    container: mapContainer.value,
-    style: mapStyle,
-    center: [-43.25, -22.91],
-    zoom: 10,
-    attributionControl: { compact: true },
+  map = L.map(mapContainer.value, {
+    center,
+    zoom: props.origin ? 13 : 11,
+    scrollWheelZoom: false,
+    attributionControl: true,
   })
 
-  map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap contributors',
+  }).addTo(map)
 
-  map.on('load', () => {
-    if (!map) return
+  contextLayer = L.layerGroup().addTo(map)
+  unitsLayer = L.layerGroup().addTo(map)
+  renderMapData()
 
-    map.addSource('units', {
-      type: 'geojson',
-      data: unitsGeoJson(),
-    })
-    map.addSource('rings', { type: 'geojson', data: ringsGeoJson() })
-    map.addSource('origin', { type: 'geojson', data: originGeoJson() })
-
-    map.addLayer({
-      id: 'distance-rings-fill',
-      type: 'fill',
-      source: 'rings',
-      paint: {
-        'fill-color': selectedColor,
-        'fill-opacity': ['match', ['get', 'km'], 2, 0.08, 5, 0.045, 0.025],
-      },
-    })
-    map.addLayer({
-      id: 'distance-rings-line',
-      type: 'line',
-      source: 'rings',
-      paint: {
-        'line-color': selectedColor,
-        'line-opacity': 0.35,
-        'line-width': 1,
-        'line-dasharray': [4, 4],
-      },
-    })
-
-    map.addLayer({
-      id: 'unit-points',
-      type: 'circle',
-      source: 'units',
-      paint: {
-        'circle-color': [
-          'case',
-          ['boolean', ['get', 'selected'], false],
-          selectedColor,
-          defaultColor,
-        ],
-        'circle-radius': [
-          'case',
-          ['boolean', ['get', 'selected'], false],
-          10,
-          5,
-        ],
-        'circle-stroke-color': '#ffffff',
-        'circle-stroke-width': 2,
-        'circle-opacity': [
-          'case',
-          ['boolean', ['get', 'selected'], false],
-          1,
-          0.72,
-        ],
-      },
-    })
-
-    map.addLayer({
-      id: 'unit-order',
-      type: 'symbol',
-      source: 'units',
-      filter: ['>', ['get', 'order'], 0],
-      layout: {
-        'text-field': ['to-string', ['get', 'order']],
-        'text-size': 11,
-        'text-font': ['Noto Sans Bold'],
-      },
-      paint: {
-        'text-color': '#ffffff',
-      },
-    })
-
-    map.addLayer({
-      id: 'family-origin',
-      type: 'circle',
-      source: 'origin',
-      paint: {
-        'circle-color': '#059669',
-        'circle-radius': 8,
-        'circle-stroke-color': '#ffffff',
-        'circle-stroke-width': 3,
-      },
-    })
-
-    map.on('click', 'unit-points', (event) => {
-      const feature = event.features?.[0]
-      if (!feature || !map) return
-
-      const coordinates = (feature.geometry as { coordinates: [number, number] }).coordinates
-      const content = document.createElement('div')
-      const title = document.createElement('strong')
-      const address = document.createElement('p')
-      const metric = document.createElement('p')
-
-      title.textContent = String(feature.properties?.name ?? '')
-      address.textContent = String(feature.properties?.address ?? '')
-      address.style.marginTop = '0.25rem'
-      metric.textContent = `${String(feature.properties?.attendance ?? '—')} confirmadas em 2025`
-      metric.style.marginTop = '0.35rem'
-      metric.style.fontSize = '0.75rem'
-      content.append(title, address, metric)
-
-      if (!feature.properties?.selected) {
-        const button = document.createElement('button')
-        button.type = 'button'
-        button.className = 'map-popup-action'
-        button.textContent = props.full ? 'Lista com 5 opções' : 'Adicionar à minha lista'
-        button.disabled = props.full
-        button.addEventListener('click', () => {
-          emit('add', String(feature.properties?.id ?? ''))
-          popup?.remove()
-        })
-        content.append(button)
-      }
-
-      popup?.remove()
-      popup = new Popup({ offset: 12, closeButton: true })
-        .setLngLat(coordinates)
-        .setDOMContent(content)
-        .addTo(map)
-    })
-
-    map.on('mouseenter', 'unit-points', () => {
-      if (map) map.getCanvas().style.cursor = 'pointer'
-    })
-    map.on('mouseleave', 'unit-points', () => {
-      if (map) map.getCanvas().style.cursor = ''
-    })
-
-    fitMap()
-  })
+  nextTick(() => map?.invalidateSize())
 })
 
 watch(
-  () => props.selectedUnitIds,
-  updateMapData,
-  { deep: true },
-)
-
-watch(
-  () => [props.units, props.origin, props.radiusKm, props.neighborhood],
-  () => {
-    updateMapData()
-    fitMap()
-  },
+  () => [
+    props.units,
+    props.selectedUnitIds,
+    props.origin,
+    props.neighborhood,
+    props.radiusKm,
+    props.full,
+  ],
+  renderMapData,
   { deep: true },
 )
 
 onBeforeUnmount(() => {
-  popup?.remove()
   map?.remove()
+  map = null
+  contextLayer = null
+  unitsLayer = null
 })
 </script>
 
@@ -345,20 +213,59 @@ onBeforeUnmount(() => {
 
 <style>
 .unit-map {
+  z-index: 0;
   width: 100%;
-  min-height: 22rem;
+  height: 22rem;
   overflow: hidden;
   border: 1px solid var(--ui-border-muted);
   border-radius: 1rem;
-  background: var(--ui-bg-muted);
+  background: #eef2f6;
+  font-family: inherit;
 }
 
-.maplibregl-popup-content {
-  max-width: 17rem;
-  border-radius: 0.75rem;
-  color: var(--ui-text);
-  font-family: inherit;
-  line-height: 1.35;
+.unit-map-origin,
+.unit-map-selected {
+  display: grid;
+  place-items: center;
+}
+
+.unit-map-origin span {
+  width: 14px;
+  height: 14px;
+  border: 2.5px solid #ffffff;
+  border-radius: 50%;
+  background: #059669;
+  box-shadow: 0 1px 4px rgb(15 23 42 / 40%);
+}
+
+.unit-map-selected span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgb(15 23 42 / 35%);
+}
+
+.unit-map-popup-line {
+  margin-top: 0.25rem;
+}
+
+.unit-map-popup-metric {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.unit-map-popup-note {
+  display: block;
+  margin-top: 0.65rem;
+  color: #2563eb;
+  font-size: 0.8rem;
 }
 
 .map-popup-action {
@@ -367,7 +274,7 @@ onBeforeUnmount(() => {
   padding: 0.55rem 0.75rem;
   border: 0;
   border-radius: 0.55rem;
-  background: var(--ui-primary);
+  background: #2563eb;
   color: white;
   font: inherit;
   font-weight: 600;
