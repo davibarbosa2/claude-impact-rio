@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Protótipo descartável — Jornada do Responsável</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section class="prototype-harness" aria-label="Controles do protótipo">
+      <div class="harness-title">
+        <span class="prototype-badge">Protótipo descartável</span>
+        <strong>Jornada do Responsável</strong>
+      </div>
+
+      <label class="stage-picker" for="stage-select">
+        <span>Momento para testar</span>
+        <select id="stage-select">
+          <option value="cadastro">1. Cadastro</option>
+          <option value="opcoes">2. Escolha das unidades</option>
+          <option value="espera">3. Acompanhamento</option>
+          <option value="oferta">4. Oferta disponível</option>
+          <option value="reativacao">5. Reativação</option>
+          <option value="matricula">6. Matrícula em andamento</option>
+        </select>
+      </label>
+
+      <p id="state-summary" class="state-summary" aria-live="polite"></p>
+    </section>
+
+    <main id="app"></main>
+
+    <nav class="variant-switcher" aria-label="Alternar variante do protótipo">
+      <button id="previous-variant" type="button" aria-label="Variante anterior">←</button>
+      <output id="variant-label" aria-live="polite"></output>
+      <button id="next-variant" type="button" aria-label="Próxima variante">→</button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <dialog id="prototype-dialog" class="prototype-dialog"></dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>

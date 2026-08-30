@@ -1,0 +1,33 @@
+{
+  "name": "vaga-carioca",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.13.0",
+  "scripts": {
+    "build": "nuxt build",
+    "data:sync": "node scripts/sync-team-data.mjs",
+    "dev": "nuxt dev",
+    "postinstall": "nuxt prepare",
+    "preview": "nuxt preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.127",
+    "@internationalized/date": "^3.12.3",
+    "@nuxt/ui": "^4.11.0",
+    "maplibre-gl": "^6.6.0",
+    "nuxt": "^4.5.2",
+    "vue": "^3.5.42",
+    "vue-router": "^5.3.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "csv-parse": "^6.1.0",
+    "exceljs": "^4.4.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11",
+    "vue-tsc": "^3.3.11"
+  }
+}

@@ -1,0 +1,145 @@
+[
+ {
+  "id": 28,
+  "ordem": 1,
+  "pergunta": "Criança cuja família seja inscrita no CadÚnico (Cadastro Único para Programas Sociais)?",
+  "pontos": 51,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Folha-resumo do CadÚnico atualizada (últimos 12 meses)"
+  ]
+ },
+ {
+  "id": 31,
+  "ordem": 2,
+  "pergunta": "A criança é público-alvo da educação especial?",
+  "pontos": 25,
+  "desempate": false,
+  "escopo": "crianca",
+  "documentos": [
+   "Laudo médico ou relatório multiprofissional com CID"
+  ]
+ },
+ {
+  "id": 6,
+  "ordem": 3,
+  "pergunta": "Faz parte do programa bolsa família ou possui Cartão Carioca?",
+  "pontos": 2,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Extrato do Bolsa Família ou Cartão Carioca no nome do responsável"
+  ]
+ },
+ {
+  "id": 17,
+  "ordem": 4,
+  "pergunta": "A criança e/ou familiar do seu convívio diário é vitima de violência doméstica?",
+  "pontos": 4,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Boletim de ocorrência, medida protetiva ou relatório da rede de proteção"
+  ]
+ },
+ {
+  "id": 20,
+  "ordem": 5,
+  "pergunta": "A criança pertence a família monoparental?",
+  "pontos": 4,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Certidão de nascimento da criança sem o segundo responsável, ou declaração de guarda unilateral"
+  ]
+ },
+ {
+  "id": 25,
+  "ordem": 6,
+  "pergunta": "Candidato tem pais ou responsáveis deficientes ?",
+  "pontos": 3,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Laudo médico do pai, mãe ou responsável com CID"
+  ]
+ },
+ {
+  "id": 18,
+  "ordem": 7,
+  "pergunta": "A criança e/ou alguém do núcleo familiar apresentam doenças crônicas graves?",
+  "pontos": 3,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Laudo ou relatório médico com CID do familiar"
+  ]
+ },
+ {
+  "id": 16,
+  "ordem": 8,
+  "pergunta": "Existe algum membro do núcleo familiar que faz uso abusivo de drogas e/ou alcoól?",
+  "pontos": 2,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Declaração de acompanhamento em CAPS-AD ou serviço equivalente"
+  ]
+ },
+ {
+  "id": 12,
+  "ordem": 9,
+  "pergunta": "Existe algum membro do núcleo familiar que é presidiário ou ex-presidiário nos últimos 5 anos?",
+  "pontos": 2,
+  "desempate": false,
+  "escopo": "familia",
+  "documentos": [
+   "Atestado de permanência carcerária ou certidão de execução penal"
+  ]
+ },
+ {
+  "id": 23,
+  "ordem": 10,
+  "pergunta": "O candidato é refugiado?",
+  "pontos": 2,
+  "desempate": false,
+  "escopo": "crianca",
+  "documentos": [
+   "Protocolo de refúgio, RNM ou documento do CONARE"
+  ]
+ },
+ {
+  "id": 27,
+  "ordem": 11,
+  "pergunta": "Criança aguardou em fila de espera no ano anterior sem ter sido atendida?",
+  "pontos": 2,
+  "desempate": false,
+  "escopo": "crianca",
+  "documentos": [
+   "Nenhum: a SME verifica no próprio sistema de inscrição"
+  ]
+ },
+ {
+  "id": 29,
+  "ordem": 12,
+  "pergunta": "O Candidato possui irmão matriculado na rede pública ou parceria?",
+  "pontos": 0,
+  "desempate": true,
+  "escopo": "crianca",
+  "documentos": [
+   "Nenhum: a SME verifica a matrícula do irmão no próprio sistema"
+  ]
+ },
+ {
+  "id": 30,
+  "ordem": 13,
+  "pergunta": "O Candidato possui pais ou responsáveis com idade menor que 18 anos?",
+  "pontos": 0,
+  "desempate": true,
+  "escopo": "familia",
+  "documentos": [
+   "Documento de identidade do pai, mãe ou responsável"
+  ]
+ }
+]
