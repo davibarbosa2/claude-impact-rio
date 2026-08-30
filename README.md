@@ -6,6 +6,8 @@ O projeto foi criado para um hackathon apoiado pela Secretaria Municipal de Educ
 
 > [!IMPORTANT]
 > Esta é uma demonstração. Ela não cria inscrições oficiais, não reserva vagas e não apresenta disponibilidade atual. Protocolos, envios e estados de acompanhamento são simulados.
+>
+> Video: https://www.loom.com/share/b659f61bbcdd464a891090eb375ad4e3
 
 ## O que a demo oferece
 
