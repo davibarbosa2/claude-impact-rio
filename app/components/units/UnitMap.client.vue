@@ -29,11 +29,11 @@ const mapContainer = useTemplateRef<HTMLDivElement>('mapContainer')
 const mapStyle: StyleSpecification = {
   version: 8,
   sources: {
-    carto: {
+    openstreetmap: {
       type: 'raster',
-      tiles: ['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
+      tiles: ['https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'],
       tileSize: 256,
-      attribution: '© OpenStreetMap contributors © CARTO',
+      attribution: '© OpenStreetMap contributors · HOT style hosted by OpenStreetMap France',
       maxzoom: 20,
     },
   },
@@ -46,7 +46,7 @@ const mapStyle: StyleSpecification = {
     {
       id: 'basemap',
       type: 'raster',
-      source: 'carto',
+      source: 'openstreetmap',
     },
   ],
 }
