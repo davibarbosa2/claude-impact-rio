@@ -3,11 +3,6 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
   compatibilityDate: '2026-08-30',
-  runtimeConfig: {
-    public: {
-      mapStyleUrl: 'https://tiles.openfreemap.org/styles/positron',
-    },
-  },
   ui: {
     colorMode: false,
     fonts: false,

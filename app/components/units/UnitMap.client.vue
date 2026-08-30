@@ -6,6 +6,7 @@ import {
   NavigationControl,
   Popup,
 } from 'maplibre-gl'
+import type { StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { percentual } from '#shared/domain/format'
 import type { Unidade } from '#shared/types/registration'
@@ -24,7 +25,31 @@ const emit = defineEmits<{
 }>()
 
 const mapContainer = useTemplateRef<HTMLDivElement>('mapContainer')
-const runtimeConfig = useRuntimeConfig()
+
+const mapStyle: StyleSpecification = {
+  version: 8,
+  sources: {
+    carto: {
+      type: 'raster',
+      tiles: ['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors © CARTO',
+      maxzoom: 20,
+    },
+  },
+  layers: [
+    {
+      id: 'background',
+      type: 'background',
+      paint: { 'background-color': '#eef2f6' },
+    },
+    {
+      id: 'basemap',
+      type: 'raster',
+      source: 'carto',
+    },
+  ],
+}
 
 let map: Map | undefined
 let popup: Popup | undefined
@@ -99,16 +124,6 @@ function originGeoJson() {
   }
 }
 
-function resolveSemanticColor(variable: string, fallback: string) {
-  const probe = document.createElement('span')
-  probe.style.color = `var(${variable})`
-  probe.style.display = 'none'
-  document.body.appendChild(probe)
-  const color = getComputedStyle(probe).color || fallback
-  probe.remove()
-  return color
-}
-
 function updateMapData() {
   const unitsSource = map?.getSource('units')
   if (unitsSource instanceof GeoJSONSource) unitsSource.setData(unitsGeoJson())
@@ -150,12 +165,12 @@ function fitMap() {
 onMounted(() => {
   if (!mapContainer.value) return
 
-  const selectedColor = resolveSemanticColor('--ui-primary', '#2563eb')
-  const defaultColor = resolveSemanticColor('--ui-text-muted', '#64748b')
+  const selectedColor = '#2563eb'
+  const defaultColor = '#64748b'
 
   map = new Map({
     container: mapContainer.value,
-    style: runtimeConfig.public.mapStyleUrl,
+    style: mapStyle,
     center: [-43.25, -22.91],
     zoom: 10,
     attributionControl: { compact: true },
