@@ -19,6 +19,14 @@ const catalog = useUnitCatalog()
 const activeChildId = ref(draft.value.criancas[0]?.id ?? '')
 const query = ref('')
 
+watch(
+  () => draft.value.criancas.map(child => child.id),
+  (childIds) => {
+    if (!childIds.includes(activeChildId.value)) activeChildId.value = childIds[0] ?? ''
+  },
+  { immediate: true },
+)
+
 const childTabs = computed(() => draft.value.criancas.map((child, index) => ({
   value: child.id,
   label: child.nome.split(' ')[0] || `Criança ${index + 1}`,

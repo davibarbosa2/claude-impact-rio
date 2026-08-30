@@ -9,6 +9,7 @@ import type { Canal, Horario, Inscricao } from '#shared/types/registration'
 import type { RespostaInscricaoSimulada } from '#shared/types/registration'
 
 const STORAGE_KEY = 'fralda-carioca.inscricao.v2'
+const LEGACY_STORAGE_KEY = 'vaga-carioca.inscricao.v2'
 
 export function useRegistrationDraft() {
   const draft = useState<Inscricao>('inscricao-creche-v2', criarInscricao)
@@ -19,7 +20,8 @@ export function useRegistrationDraft() {
   if (import.meta.client && !hydrated.value) {
     onMounted(() => {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY)
+        const currentRaw = localStorage.getItem(STORAGE_KEY)
+        const raw = currentRaw ?? localStorage.getItem(LEGACY_STORAGE_KEY)
         const saved = raw ? JSON.parse(raw) as { inscricao?: Inscricao, route?: string } : null
         if (saved?.inscricao?.version === 2 && saved.inscricao.criancas?.length) {
           const empty = criarInscricao()
@@ -30,6 +32,7 @@ export function useRegistrationDraft() {
             endereco: { ...empty.endereco, ...saved.inscricao.endereco },
           }
           if (saved.route?.startsWith('/inscricao/')) resumeRoute.value = saved.route
+          if (!currentRaw && raw) localStorage.setItem(STORAGE_KEY, raw)
         }
       }
       catch {
@@ -158,6 +161,7 @@ export function useRegistrationDraft() {
 
     try {
       localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(LEGACY_STORAGE_KEY)
     }
     catch {
       // A inscrição já foi concluída; não há ação corretiva necessária.
@@ -169,7 +173,10 @@ export function useRegistrationDraft() {
   function resetDraft() {
     draft.value = criarInscricao()
     resumeRoute.value = '/inscricao/criancas'
-    if (import.meta.client) localStorage.removeItem(STORAGE_KEY)
+    if (import.meta.client) {
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(LEGACY_STORAGE_KEY)
+    }
   }
 
   return {
